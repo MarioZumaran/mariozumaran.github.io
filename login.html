@@ -562,8 +562,7 @@ async function doLogin() {
 
       // Redirigir al módulo principal
       setTimeout(() => {
-        const redirect = new URLSearchParams(window.location.search).get('redirect') || '/audit';
-        window.location.href = redirect + `?tenant=${data.tenant.slug}`;
+        // redirigido arriba por rol
       }, 800);
 
     } else if (res.status === 429) {
