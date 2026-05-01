@@ -1847,7 +1847,7 @@ function logout() {
     body: JSON.stringify({ all_devices: false })
   }).finally(() => {
     sessionStorage.clear();
-    window.location.href = '/frontend/login.html';
+    window.location.href = '/login.html';
   });
 }
 
