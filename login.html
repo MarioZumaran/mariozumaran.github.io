@@ -562,7 +562,14 @@ async function doLogin() {
 
       // Redirigir al módulo principal
       setTimeout(() => {
-        // redirigido arriba por rol
+        const role = data.operator.role;
+        if (data.must_change_password) {
+          window.location.href = '/set-password?token=change&email=' + encodeURIComponent(data.operator.email);
+        } else if (role === 'admin' || role === 'supervisor') {
+          window.location.href = '/dashboard.html';
+        } else {
+          window.location.href = '/app.html';
+        }
       }, 800);
 
     } else if (res.status === 429) {
