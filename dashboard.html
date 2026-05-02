@@ -1842,12 +1842,12 @@ if (OPERATOR) {
 
 function logout() {
   if (!confirm('¿Cerrar sesión?')) return;
-  fetch('https://dmz-audit.netlify.app/api/auth-logout', { method:'POST', credentials:'omit',
+  fetch('https://dmz-audit.netlify.app/api/auth-logout', { method:'POST', credentials:'include',
     headers:{ 'Authorization': TOKEN?`Bearer ${TOKEN}`:'', 'Content-Type':'application/json' },
     body: JSON.stringify({ all_devices: false })
   }).finally(() => {
     sessionStorage.clear();
-    window.location.href = '/login.html';
+    window.location.href = '/frontend/login.html';
   });
 }
 
@@ -2101,7 +2101,7 @@ function loadAjustes() {
   }
   const slug = TENANT?.slug||'dmz';
   document.getElementById('login-url').textContent =
-    `${location.origin}/login.html?tenant=${slug}`;
+    `${location.origin}/frontend/login.html?tenant=${slug}`;
 }
 
 /* ══════════════════════════════════════════════
@@ -2341,7 +2341,7 @@ async function submitAudit(){
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':TOKEN?`Bearer ${TOKEN}`:'','X-Client-GPS':currentGPS?`${currentGPS.lat},${currentGPS.lng}`:'unavailable','X-Request-ID':'REQ-'+Date.now().toString(36).toUpperCase()},
       body:JSON.stringify(payload),
-      credentials:'omit'
+      credentials:'include'
     });
     const result=await res.json();
     if(res.ok&&result.success){
