@@ -1489,6 +1489,10 @@ async function submitFromSheet() {
     const result = await res.json();
     if (res.ok && result.success) {
       showSheetStatus('success', `✅ Enviada — ${result.auditId}`);
+
+      // Enviar reporte WA al administrador
+      enviarReporteWA(payload, result.auditId, avgScore);
+
       setTimeout(() => {
         closeSheetDirect();
         if (sheetType==='alimentos') { cardsM=[]; counterM=0; document.getElementById('cards-col-m').innerHTML=''; updateFAB(); }
@@ -1619,6 +1623,51 @@ function logout(){
     .finally(()=>{sessionStorage.clear();window.location.href='/login.html';});
 }
 
+
+
+/* ── REPORTE AUTOMÁTICO WA AL ENVIAR EVALUACIÓN ── */
+function enviarReporteWA(payload, auditId, score) {
+  try {
+    const op      = OPERATOR || {};
+    const nivel   = score >= 85 ? '🟢 EXCELENTE' : score >= 70 ? '🟡 BUENO' : score >= 55 ? '🟠 REGULAR' : score >= 40 ? '🔴 DEFICIENTE' : '🚨 CRÍTICO';
+    const tipo    = (payload.tipo || 'alimentos').toUpperCase();
+    const items   = payload.items || [];
+    const time    = new Date().toLocaleString('es-MX', {timeZone:'America/Mexico_City'});
+
+    // Construir detalle de items
+    const itemLines = items.map(it => {
+      const niv = it.score >= 85 ? '🟢' : it.score >= 70 ? '🟡' : it.score >= 55 ? '🟠' : '🔴';
+      return `  ${niv} ${it.nombre}: ${it.score}/100${it.observaciones ? ' — ' + it.observaciones.slice(0,40) : ''}`;
+    }).join('\n');
+
+    const msg = [
+      `📋 *EVALUACIÓN DMZ AUDIT*`,
+      `${nivel} — ${score}/100`,
+      ``,
+      `🏢 *${payload.establecimiento || '—'}*`,
+      `👤 Auditor: ${op.full_name || payload.auditor || '—'}`,
+      `📅 Fecha: ${payload.fecha || '—'} · ${payload.servicio || '—'}`,
+      `🔖 Tipo: ${tipo}`,
+      ``,
+      `*Detalle:*`,
+      itemLines,
+      ``,
+      payload.conclusion ? `💬 *Dictamen:* ${payload.conclusion.slice(0,150)}` : '',
+      ``,
+      `🆔 ID: ${auditId}`,
+      `🕐 ${time}`,
+      `_DMZ Audit · dmzkitchensupport.com_`
+    ].filter(l => l !== undefined).join('\n');
+
+    const waURL = 'https://wa.me/522223623135?text=' + encodeURIComponent(msg);
+
+    // Abrir WA automáticamente
+    window.open(waURL, '_blank');
+
+  } catch(e) {
+    console.warn('WA report error:', e);
+  }
+}
 
 /* ── REPORTE DE ERROR POR WHATSAPP ── */
 let lastError = null;
