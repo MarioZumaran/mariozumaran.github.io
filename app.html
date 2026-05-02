@@ -902,6 +902,10 @@ body { background:var(--bg); font-family:'Morl',sans-serif; color:var(--text); f
 
     <div class="field" style="margin-top:14px;">
       <label class="field-label">Conclusión y dictamen</label>
+      <div id="sheet-justif-alert" style="display:none;background:#FAEAEA;border:1px solid #B83232;padding:10px 12px;margin-bottom:8px;border-radius:2px;">
+        <div style="font-size:12px;font-weight:700;color:#B83232;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">⚠️ Score menor a 60 — Justificación obligatoria</div>
+        <div style="font-size:11px;color:#5C2020;line-height:1.5;">Debes explicar las causas específicas que originaron esta calificación antes de enviar.</div>
+      </div>
       <textarea class="field-input" id="sheet-concl" style="height:80px;resize:none;-webkit-user-select:text;user-select:text;" placeholder="Observaciones finales, recomendaciones clave..."></textarea>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
@@ -1332,6 +1336,15 @@ function openSheet() {
       </div>
     </div>`;
 
+  // Mostrar alerta si score < 60
+  const alertEl = document.getElementById('sheet-justif-alert');
+  if (alertEl) alertEl.style.display = avg < 60 ? 'block' : 'none';
+  if (avg < 60) {
+    document.getElementById('sheet-concl').placeholder = 'REQUERIDO: Explica las causas específicas de la calificación baja...';
+  } else {
+    document.getElementById('sheet-concl').placeholder = 'Observaciones finales, recomendaciones clave...';
+  }
+
   document.getElementById('sheet-overlay').classList.add('open');
   initSheetSig();
 }
@@ -1340,6 +1353,13 @@ function openSalonSheet() {
   sheetType = 'salon';
   document.getElementById('sheet-title').textContent = 'Enviar Evaluación · Salón';
   const avg = calcSalonAvg();
+  const alertElS = document.getElementById('sheet-justif-alert');
+  if (alertElS) alertElS.style.display = avg < 60 ? 'block' : 'none';
+  if (avg < 60) {
+    document.getElementById('sheet-concl').placeholder = 'REQUERIDO: Explica las causas específicas de la calificación baja...';
+  } else {
+    document.getElementById('sheet-concl').placeholder = 'Observaciones finales, recomendaciones clave...';
+  }
   const nk = getNKey(avg); const nm = NMAP[nk];
   document.getElementById('sheet-summary').innerHTML = `
     <div style="display:flex;align-items:center;gap:14px;background:${nm.lt};border:1px solid ${nm.hex};padding:14px;margin-bottom:4px;">
@@ -1388,6 +1408,29 @@ async function submitFromSheet() {
   const btn = document.getElementById('sheet-btn');
   const auditor = document.getElementById('sheet-fa').value.trim();
   if (!auditor) { showSheetStatus('error','Ingresa el nombre del auditor.'); return; }
+
+  // Validar justificación si score < 60
+  const evCards   = sheetType === 'alimentos' ? cardsM.filter(c=>c._pct!==undefined) : null;
+  const avgScore  = sheetType === 'alimentos'
+    ? Math.round(evCards.reduce((a,c)=>a+c._pct,0)/evCards.length)
+    : calcSalonAvg();
+  const conclusion = document.getElementById('sheet-concl').value.trim();
+
+  if (avgScore < 60) {
+    const alert = document.getElementById('sheet-justif-alert');
+    if (alert) alert.style.display = 'block';
+    if (!conclusion || conclusion.length < 20) {
+      showSheetStatus('error', '⚠️ Score ' + avgScore + '/100 — Debes justificar las causas (mínimo 20 caracteres).');
+      document.getElementById('sheet-concl').focus();
+      document.getElementById('sheet-concl').style.borderColor = '#B83232';
+      document.getElementById('sheet-concl').placeholder = 'REQUERIDO: Explica las causas de la calificación baja...';
+      return;
+    }
+    document.getElementById('sheet-concl').style.borderColor = '';
+  } else {
+    const alert = document.getElementById('sheet-justif-alert');
+    if (alert) alert.style.display = 'none';
+  }
 
   btn.disabled = true;
   showSheetStatus('loading', 'Enviando evaluación...');
