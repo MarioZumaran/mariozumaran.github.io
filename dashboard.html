@@ -1842,7 +1842,7 @@ if (OPERATOR) {
 
 function logout() {
   if (!confirm('¿Cerrar sesión?')) return;
-  fetch('https://dmz-audit.netlify.app/api/auth-logout', { method:'POST', credentials:'include',
+  fetch('https://dmz-audit.netlify.app/api/auth-logout', { method:'POST', credentials:'omit',
     headers:{ 'Authorization': TOKEN?`Bearer ${TOKEN}`:'', 'Content-Type':'application/json' },
     body: JSON.stringify({ all_devices: false })
   }).finally(() => {
@@ -2341,7 +2341,7 @@ async function submitAudit(){
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':TOKEN?`Bearer ${TOKEN}`:'','X-Client-GPS':currentGPS?`${currentGPS.lat},${currentGPS.lng}`:'unavailable','X-Request-ID':'REQ-'+Date.now().toString(36).toUpperCase()},
       body:JSON.stringify(payload),
-      credentials:'include'
+      credentials:'omit'
     });
     const result=await res.json();
     if(res.ok&&result.success){

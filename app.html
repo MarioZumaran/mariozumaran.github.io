@@ -1404,7 +1404,7 @@ async function submitFromSheet() {
         'X-Client-GPS':GPS?`${GPS.lat},${GPS.lng}`:'unavailable',
         'X-Request-ID':'APP-'+Date.now().toString(36).toUpperCase()},
       body: JSON.stringify(payload),
-      credentials:'include'
+      credentials:'omit'
     });
     const result = await res.json();
     if (res.ok && result.success) {
@@ -1535,7 +1535,7 @@ function tickTimerM(){
 /* ── LOGOUT ── */
 function logout(){
   if(!confirm('¿Cerrar sesión?'))return;
-  fetch('https://dmz-audit.netlify.app/api/auth-logout',{method:'POST',credentials:'include',headers:{'Authorization':`Bearer ${TOKEN}`,'Content-Type':'application/json'},body:JSON.stringify({all_devices:false})})
+  fetch('https://dmz-audit.netlify.app/api/auth-logout',{method:'POST',credentials:'omit',headers:{'Authorization':`Bearer ${TOKEN}`,'Content-Type':'application/json'},body:JSON.stringify({all_devices:false})})
     .finally(()=>{sessionStorage.clear();window.location.href='/login.html';});
 }
 
